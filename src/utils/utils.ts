@@ -6,6 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export const validationRules: ValidationRule[] = [
   { field: "username", method: "required", message: "Username is required" },
   {
@@ -91,3 +93,11 @@ export const loginValidationRules: ValidationRule[] = [
       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
   },
 ];
+
+export const budgetValidationRules: ValidationRule[] = [
+  { field: "name", method: "required", message: "Budget name is required" },
+  { field: "name", method: "maxLength", value: 20, message: "Budget name cannot exceed 20 characters" }, 
+  { field: "amount", method: "required", message: "Amount is required" },
+  { field: "amount", method: "isNumber", message: "Amount must be a number" }, 
+];
+

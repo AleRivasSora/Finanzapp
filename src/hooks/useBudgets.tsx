@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFinance } from "@contexts/finance-provider";
-import { format } from "date-fns";
 
 const getCurrentDateString = () => {
   const now = new Date();
@@ -12,16 +11,17 @@ const getCurrentDateString = () => {
 };
 
 export function useBudgets() {
-  const { budgets, addBudget, deleteBudget, addTransaction, currentBudget } =
+  const { addBudget, budgets,categories ,deleteBudget, addTransaction, currentBudget, getBudgets } =
     useFinance();
   const [newBudget, setNewBudget] = useState({
-    category: "",
+    id: 0,
+    name: "",
     amount: 0,
-    month: "",
-    year: new Date().getFullYear(),
+    date: "",
+
   });
   const [newTransaction, setNewTransaction] = useState({
-    budgetId: 0,
+    budget_id: 0,
     amount: 0,
     date: "",
     description: "",
@@ -31,33 +31,44 @@ export function useBudgets() {
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
 
   const handleAddBudget = () => {
-    if (newBudget.category && newBudget.amount > 0 && newBudget.month) {
-      addBudget({ ...newBudget, id: budgets.length + 1, spent: 0 });
-      setNewBudget({
-        category: "",
-        amount: 0,
-        month: "",
-        year: new Date().getFullYear(),
-      });
-      setIsAddBudgetOpen(false);
+    console.log("aaaaaaaaaa")
+    console.log(newBudget)
+    if (newBudget.name && newBudget.amount > 0 && currentDate) {
+        addBudget({ name: newBudget.name, amount: newBudget.amount });
+        setNewBudget({
+            id: 0,
+            name: "",
+            amount: 0,
+            date: "",
+        });
+        setIsAddBudgetOpen(false);
     }
-  };
+};
 
   const handleAddTransaction = () => {
+    console.log(newTransaction)
     if (
-      newTransaction.budgetId &&
+      newTransaction.budget_id &&
       newTransaction.amount > 0 &&
-      newTransaction.date
+      currentDate
     ) {
-      addTransaction({ ...newTransaction, id: Date.now() });
-      setNewTransaction({ budgetId: 0, amount: 0, date: "", description: "" });
+      console.log("********************************")
+      addTransaction(newTransaction);
+      setNewTransaction({ budget_id: 0, amount: 0, date: "", description: "" });
       setIsAddTransactionOpen(false);
     }
   };
 
+  useEffect(() => {
+    getBudgets();
+  }, []);
+
   return {
     budgets,
+    categories,
     currentBudget,
+    addTransaction,
+    addBudget,
     newBudget,
     setNewBudget,
     newTransaction,

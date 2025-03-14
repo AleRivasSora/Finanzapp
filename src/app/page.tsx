@@ -8,6 +8,8 @@ import { useModal } from "@contexts/modal-context";
 import { useFormValidator } from "@hooks/useFormValidator";
 import { validationRules, loginValidationRules } from "@utils/utils";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@utils/utils";
+import { routes } from "@utils/routes";
 
 export default function Home() {
   const router = useRouter();
@@ -18,29 +20,21 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { validate } = useFormValidator();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
 
   const {
     data: loginData,
     error: loginError,
     loading: loginLoading,
     fetchData: loginFetch,
-  } = useApi({
-    url: `${apiUrl}/login`,
-    method: "POST",
-    body: { email, password },
-  });
+  } = useApi({});
 
   const {
     data: registerData,
     error: registerError,
     loading: registerLoading,
     fetchData: registerFetch,
-  } = useApi({
-    url: `${apiUrl}/register`,
-    method: "POST",
-    body: { username, email, password },
-  });
+  } = useApi({});
 
   const handleLogin = (email: string, password: string) => {
     const { isValid, errors } = validate(
@@ -48,7 +42,7 @@ export default function Home() {
       loginValidationRules
     );
     if (isValid) {
-      loginFetch({ email, password });
+      loginFetch(routes.login, "POST" ,{ email, password}, (data)=> handleLoginSuceess(data), (error) => showModal("Error", error.message ?? "An error occurred", "error"));
     } else {
       const errorMessages = Object.values(errors)
         .map((error) => `${error}.`)
@@ -68,7 +62,7 @@ export default function Home() {
       validationRules
     );
     if (isValid) {
-      registerFetch({ username, email, password });
+      registerFetch( routes.register,"POST",{ username, email, password }, (data) => handleRegisterSuccess(data), (error) => showModal("Error", registerError ?? "An error occurred", "error"));
     } else {
       const errorMessages = Object.values(errors)
         .map((error) => `${error}.`)
@@ -76,6 +70,16 @@ export default function Home() {
       showModal("Error", errorMessages, "error");
     }
   };
+
+  const handleLoginSuceess = () => {
+    showModal("Success", "Login successful", "success");
+    router.push("/dashboard");
+    
+  }
+  const handleRegisterSuccess = () => {
+    showModal("Success", "Registration successful", "success");
+    setIsLogin(true);
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">

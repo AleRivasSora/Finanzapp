@@ -10,7 +10,9 @@ export interface ValidationRule {
     | "match"
     | "noSpecialChars"
     | "noSpaces"
-    | "passwordComplexity";
+    | "passwordComplexity"
+    | "isNumber"
+    | "greaterThan";
   value?: any;
   message: string;
 }
@@ -22,6 +24,10 @@ interface ValidationResult {
 
 export function useFormValidator() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const cleanErrors= () => {
+      setErrors({});
+  }
 
   const validate = (
     formData: { [key: string]: any },
@@ -77,6 +83,16 @@ export function useFormValidator() {
             newErrors[rule.field] = rule.message;
           }
           break;
+        case "isNumber":
+          if (fieldValue === "" || isNaN(Number(fieldValue))) { 
+            newErrors[rule.field] = rule.message;
+          }
+          break;
+        case "greaterThan":
+          if (isNaN(Number(fieldValue)) || Number(fieldValue) <= rule.value) { 
+            newErrors[rule.field] = rule.message;
+          }
+          break;
         default:
           break;
       }
@@ -86,5 +102,5 @@ export function useFormValidator() {
     return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
   };
 
-  return { errors, validate };
+  return { errors, validate, cleanErrors };
 }

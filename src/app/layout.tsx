@@ -26,10 +26,10 @@ export default function RootLayout({
       <body
         className={`${inter.className} min-h-screen bg-background text-foreground`}
       >
+        <ModalProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <FinanceProvider>
             <ThemeToggle />
-            <ModalProvider>
               <div className="flex h-screen">
                 {shouldShowNavigation && (
                   <aside className="w-64 bg-background border-r border-border p-4">
@@ -39,9 +39,9 @@ export default function RootLayout({
                 )}
                 <main className="flex-1 p-8  overflow-auto">{children}</main>
               </div>
-            </ModalProvider>
           </FinanceProvider>
         </ThemeProvider>
+        </ModalProvider>
       </body>
     </html>
   );

@@ -19,8 +19,14 @@ import {
   PiggyBank,
   Wallet,
 } from "lucide-react";
+import InfoCard from "@/components/ui/info-card";
+import LineChartCard from "@/components/ui/line-chart-card";
 
-// Sample data for the charts
+const cardStyles = {
+  title: "flex items-center justify-between",
+  content: "text-sm font-medium",
+}
+
 const monthlyData = [
   { name: "Jan", expenses: 2100, savings: 2800 },
   { name: "Feb", expenses: 2000, savings: 3000 },
@@ -30,7 +36,35 @@ const monthlyData = [
   { name: "Jun", expenses: 2200, savings: 2800 },
 ];
 
-// Sample calendar events
+const cardData = [
+  {
+    title: "Total Budget",
+    amount: "$5,000",
+    description: "Monthly allocation",
+    icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "Expenses",
+    amount: "$2,000",
+    change: "+12% from last month",
+    changeType: "negative",
+    icon: <Wallet className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "Savings",
+    amount: "$3,000",
+    change: "+8% from last month",
+    changeType: "positive",
+    icon: <PiggyBank className="h-4 w-4 text-muted-foreground" />,
+  },
+  {
+    title: "Investments",
+    amount: "$1,500",
+    change: "Updated today",
+    icon: <ArrowUp className="h-4 w-4 text-muted-foreground" />,
+  },
+];
+
 const events = {
   "2024-02-15": "bill",
   "2024-02-20": "income",
@@ -58,57 +92,9 @@ export default function Dashboard() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$5,000</div>
-            <div className="text-xs text-muted-foreground">
-              Monthly allocation
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expenses</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$2,000</div>
-            <p className="flex items-center text-xs text-red-600">
-              <ArrowUp className="h-4 w-4" />
-              +12% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Savings</CardTitle>
-            <PiggyBank className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$3,000</div>
-            <p className="flex items-center text-xs text-green-600">
-              <ArrowUp className="h-4 w-4" />
-              +8% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Investments</CardTitle>
-            <ArrowUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$1,500</div>
-            <p className="flex items-center text-xs text-muted-foreground">
-              <ArrowDown className="h-4 w-4" />
-              Updated today
-            </p>
-          </CardContent>
-        </Card>
+      {cardData.map((card, index) => (
+        <InfoCard key={index} {...card} /> 
+      ))}
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
@@ -169,42 +155,29 @@ export default function Dashboard() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Savings Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={monthlyData}>
-                <XAxis dataKey="name" stroke="#888888" fontSize={12} />
-                <YAxis stroke="#888888" fontSize={12} />
-                <Line
-                  type="monotone"
-                  dataKey="savings"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="stroke-primary"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+         <LineChartCard
+        title="Savings Trend"
+        data={monthlyData} 
+        dataKey="savings" 
+        strokeColor="white" 
+        height={350} 
+      />
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Financial Details</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Total Savings</span>
+              <div className={`${cardStyles.title}`}>
+                <span className={`${cardStyles.content}`}>Total Savings</span>
                 <span className="font-bold">$3,000</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Investments</span>
+              <div className={`${cardStyles.title}`}>
+                <span className={`${cardStyles.content}`}>Investments</span>
                 <span className="font-bold">$1,500</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Debts</span>
+              <div className={`${cardStyles.title}`}>
+                <span className={`${cardStyles.content}`}>Debts</span>
                 <span className="font-bold text-red-600">$500</span>
               </div>
             </div>

@@ -3,26 +3,25 @@ import { useState, useCallback } from "react";
 import { useModal } from "@contexts/modal-context";
 import { useRouter } from "next/navigation";
 
-interface UseApiProps {
-  url: string;
-  method?: "GET" | "POST" | "PUT" | "DELETE";
-  body?: any;
-  headers?: HeadersInit;
+interface UseApiProps<T> {
 }
 
 interface UseApiResponse<T> {
   data: T | null;
   error: string | null;
   loading: boolean;
-  fetchData: (body?: any) => void;
+  fetchData: (
+      url: string, 
+      method: "GET" | "POST" | "PUT" | "DELETE" ,
+      body?: any,
+      onSuccess?: (data: T) => void,
+      onError?: (error: string) => void,
+      onFinally?: () => void,
+  ) => Promise<void>;
 }
 
 export function useApi<T>({
-  url,
-  method,
-  body = null,
-  headers = {},
-}: UseApiProps): UseApiResponse<T> {
+}: UseApiProps<T>): UseApiResponse<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,8 +29,16 @@ export function useApi<T>({
   const router = useRouter();
 
   const fetchData = useCallback(
-    async (requestBody?: any) => {
+      async (
+          url: string, 
+          method = "GET",
+          requestBody?: any,
+          onSuccess?: (data: T) => void,
+          onError?: (error: string) => void,
+          onFinally?: () => void
+      ) => {
       if (loading) return;
+
       setLoading(true);
       setError(null);
 
@@ -41,57 +48,47 @@ export function useApi<T>({
           method,
           headers: {
             "Content-Type": "application/json",
-            ...headers,
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(token ? { "Authorization": `Bearer ${token}` } : {}),
           },
-          body: requestBody
-            ? JSON.stringify(requestBody)
-            : body
-            ? JSON.stringify(body)
-            : null,
+          body: requestBody ? JSON.stringify(requestBody) : null, 
         });
 
-        const result = await response.json();
-        if (!response.ok) {
+        if (!response.ok) {  
+          const errorText = await response.json(); 
+          const errorMessage = errorText.detail || "An error occurred";
+          setError(errorMessage);
           if (response.status === 401 || response.status === 403) {
-            setLoading(false);
             localStorage.removeItem("token");
-            router.push("/login");
-            showModal(
-              "Error",
-              "Session expired. Please log in again.",
-              "error"
-            );
-          } else {
-            setLoading(false);
-            showModal("Error", result.detail ?? "An error occurred", "error");
+            router.push("/");
+            showModal("Error", "Session expired. Please log in again.", "error");
+        } 
+      }
+        
+        response.json()
+        .then((data) => {
+
+          const result =  data
+          const newToken = response.headers.get("Authorization") || result.access_token;
+          if (newToken) {
+            localStorage.setItem("token", newToken.replace("Bearer ", ""));
           }
-          return;
-        }
+  
+          setData(result);
+          if (onSuccess) onSuccess(result);
 
-        const newToken =
-          response.headers.get("Authorization") || result.access_token;
-        if (newToken) {
-          localStorage.setItem("token", newToken.replace("Bearer ", ""));
-        }
-
-        setData(result);
-        const message = result.message ? result.message : "Request successful";
-        showModal("Success", message, "success");
+        })
       } catch (err: any) {
-        console.log(err);
-        const message = err.detail
-          ? err.detail
-          : err.message
-          ? err.message
-          : "An error occurred";
-        setError(message);
-        showModal("Error", message, "error");
+        console.error("Error en useApi:", err);
+        let errorMessage = err?.response?.data?.detail ?? err?.message ?? err.detail ?? "An error occurred";
+        console.log(err.detail)
+        setError(errorMessage);
+        if (onError) onError(errorMessage);
       } finally {
         setLoading(false);
+        if (onFinally) onFinally();
       }
     },
-    [url, method, body, headers, loading, showModal, router]
+    [   showModal, router] 
   );
 
   return { data, error, loading, fetchData };
